@@ -38,8 +38,9 @@ const Profile = () => {
   return (
     <div>
       <h1>Profile</h1>
+      <p className='cursor-pointer' onClick={() => {router.push('/')}}>Explore</p>
       <div>
-        <Image src={user.photoURL || ''} alt={user.displayName || 'User'} style={{ width: '100px', height: '100px', borderRadius: '50%' }} />
+        <Image width={100} height={100} src={user.photoURL || ''} alt={user.displayName || 'User'} style={{ width: '100px', height: '100px', borderRadius: '50%' }} />
         <h2>{user.displayName}</h2>
         <p>{user.email}</p>
       </div>
