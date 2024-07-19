@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { setSession } from '@/lib/session';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -32,18 +33,34 @@ const Login = () => {
     return () => unsubscribe();
   }, [isMounted ,router]);
 
+  const generateSessionId = () => {
+    return Math.random().toString(36).substr(2, 9);
+  };
+
   const handleLoginWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error('Error logging in with Google', error);
+      const result = await signInWithPopup(auth, googleProvider);
+      const currUser = result.user;
+      if (currUser) {
+        const sessionId = generateSessionId();
+        await setSession(sessionId, { uid: currUser.uid });
+        document.cookie = `sessionId=${sessionId}; path=/`;
     }
-  };
+  }catch (error) {
+    console.error('Error logging in with Google', error);
+  }
+}
 
   const handleLoginWithEmail = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      const currUser = result.user;
+      if (currUser) {
+        const sessionId = generateSessionId();
+        await setSession(sessionId, { uid: currUser.uid });
+        document.cookie = `sessionId=${sessionId}; path=/`;
+      }
     } catch (error) {
       console.error('Error logging in with email and password', error);
     }
@@ -67,8 +84,9 @@ const Login = () => {
     return <div>Loading...</div>; 
   }
 
+  
   return (
-    <div className='flex flex-col h-[100vh] w-full items-center justify-center'>
+    <div className='flex flex-col h-full w-full items-center justify-center'>
       <Card className="w-[350px]">
       <CardHeader>
         <CardTitle>{signIn ? "Login" : "Sign Up" }</CardTitle>
