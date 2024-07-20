@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { setSession } from '@/lib/session';
+import Loading from '@/app/loading';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -81,7 +82,7 @@ const Login = () => {
   }
 
   if (user) {
-    return <div>Loading...</div>; 
+    return <Loading />; 
   }
 
   

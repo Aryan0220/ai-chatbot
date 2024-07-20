@@ -1,11 +1,20 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
-import { storeUserHistory, getUserGenerationCount, incrementUserGenerationCount } from '@/utils/rate-limit';
+import { storeUserHistory, getUserGenerationCount, incrementUserGenerationCount, resetGenerationCounts } from '@/utils/rate-limit';
+import Loading from '@/app/loading';
+import { getSession } from '@/lib/session';
+
+
+const getDifferenceInHours = (startTime: number, endTime: number): number => {
+  const millisecondsInAnHour = 1000 * 60 * 60;
+  const differenceInMilliseconds = endTime - startTime;
+  return differenceInMilliseconds / millisecondsInAnHour;
+}
 
 const Generate: React.FC = () => {
     const { user, loading } = useAuth();
@@ -13,6 +22,26 @@ const Generate: React.FC = () => {
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
     const router = useRouter();
   
+    useEffect(() => {
+
+      let cook = document.cookie;
+      cook = cook.split("=")[1];
+      console.log(cook);
+      const session = async () => {
+        let data = await getSession(cook);
+        console.log(data?.expiration);
+        let hours = Math.abs(getDifferenceInHours(data?.expiration, Date.now()));
+        if(hours >= 1){
+          if (!user) return;
+          const userId = user.email!;
+          await resetGenerationCounts(userId);
+        }
+      }
+      console.log(Date.now());
+      session();
+
+    },[user])
+
     // const handleReset = async () => {
     //     if(!user) return;
     //     const userId = user.email!;
@@ -50,7 +79,7 @@ const Generate: React.FC = () => {
         <div className='flex flex-col gap-y-4 justify-center items-center'>
         <h1 className='font-bold text-6xl text-center'>Generate Image</h1>
         {loading ? (
-          <p>Loading...</p>
+          <Loading />
         ) : user ? (
           <>
           <div className='flex w-[23rem] flex-col gap-y-2 items-end'>

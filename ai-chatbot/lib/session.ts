@@ -8,7 +8,7 @@ const headers = {
   Authorization: `Bearer ${KV_REST_API_TOKEN}`,
 };
 
-const SESSION_EXPIRY_MS = 1000 * 60 * 60; // 1 hour
+const SESSION_EXPIRY_MS = 1000 * 60 * 60;
 
 export const setSession = async (sessionId: string, data: any) => {
   const expiration = Date.now() + SESSION_EXPIRY_MS;
@@ -20,16 +20,14 @@ export const setSession = async (sessionId: string, data: any) => {
 export const getSession = async (sessionId: string) => {
   try {
     const response = await axios.get(`${KV_REST_API_URL}/get/session:${sessionId}`, { headers });
-    
     const sessionData = response.data.result ? JSON.parse(response.data.result) : null;
 
     if (sessionData) {
-        console.log(sessionData);
       const { expiration, ...data } = sessionData;
       if (Date.now() < expiration) {
-        return data;
+        return {expiration};
       } else {
-        await deleteSession(sessionId); // Delete expired session
+        await deleteSession(sessionId);
       }
     }
   } catch (error) {
